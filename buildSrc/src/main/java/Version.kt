@@ -1,4 +1,3 @@
-
 internal object Version {
 
     const val kotlin = "1.3.31"
@@ -27,4 +26,6 @@ internal object Version {
     const val glide = "4.9.0"
 
     const val paging = "2.1.0"
+
+    const val klock = "1.0.0"
 }

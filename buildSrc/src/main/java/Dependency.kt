@@ -1,4 +1,3 @@
-
 object Dependency {
 
     const val gradle = "com.android.tools.build:gradle:${Version.gradle}"
@@ -88,5 +87,11 @@ object Dependency {
         const val glide = "com.github.bumptech.glide:glide:${Version.glide}"
         const val compiler = "com.github.bumptech.glide:compiler:${Version.glide}"
     }
+
+    object Kclock {
+
+        const val jvm = "com.soywiz:klock-jvm:${Version.klock}"
+    }
+
 
 }

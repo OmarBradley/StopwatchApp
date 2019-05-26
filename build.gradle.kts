@@ -17,6 +17,9 @@ allprojects {
     repositories {
         google()
         jcenter()
+        maven {
+            setUrl("https://dl.bintray.com/soywiz/soywiz")
+        }
     }
 }
 
