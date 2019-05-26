@@ -10,11 +10,17 @@ import kotlinx.coroutines.launch
 
 class StopwatchLogicUsecase {
 
-    var seed = 0L
+    private var seed = 0L
 
-    lateinit var stopwatchJob: Job
+    private var stopwatchJob: Job? = null
 
-    inline fun startStopwatch(coroutineScope: CoroutineScope, delayTimeMillis: Long, crossinline subscribe: (Long) -> Unit) {
+    var stopwatchState: StopwatchState = StopwatchState.STOP
+        private set(value) {
+            field = value
+        }
+
+    fun runStopwatch(coroutineScope: CoroutineScope, delayTimeMillis: Long, subscribe: (Long) -> Unit) {
+        stopwatchState = StopwatchState.START
         stopwatchJob = coroutineScope.launch {
             generateSequence(seed, Long::inc)
                 .asFlow()
@@ -26,12 +32,24 @@ class StopwatchLogicUsecase {
         }
     }
 
-    suspend fun stopStopwatch() {
-        stopwatchJob.cancelAndJoin()
+    fun stopStopwatch(coroutineScope: CoroutineScope) {
+        coroutineScope.launch {
+            stopwatchState = StopwatchState.STOP
+            stopwatchJob?.cancelAndJoin()
+        }
+    }
+
+    fun resetStopwatch(coroutineScope: CoroutineScope, subscribe: (Long) -> Unit) {
+        coroutineScope.launch {
+            stopwatchState = StopwatchState.RESET
+            stopwatchJob?.cancelAndJoin()
+            seed = 0L
+            subscribe(seed)
+        }
     }
 
 }
 
-enum class StopwatchFunction {
-    START, CONTINUE, STOP, RESET
+enum class StopwatchState {
+    START, STOP, RESET
 }

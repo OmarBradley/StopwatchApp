@@ -2,13 +2,13 @@ package omarbradley.com.stopwatchapp.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import kotlinx.coroutines.launch
 import omarbradley.com.domain.usecase.stopwatch.StopwatchLogicUsecase
+import omarbradley.com.domain.usecase.stopwatch.StopwatchState
 import omarbradley.com.stopwatchapp.R
 import omarbradley.com.util.base.BaseViewModel
 import omarbradley.com.util.date.HHmmssFormatString
 
-const val STOPWATCH_DELAY_TIME = 100L
+const val STOPWATCH_DELAY_TIME = 10L
 
 class MainViewModel(
     private val stopwatchLogicUseCase: StopwatchLogicUsecase
@@ -30,23 +30,36 @@ class MainViewModel(
         _timeText.value = "00:00:00"
         _isEnableRightButton.value = true
         _rightButtonTextRes.value = R.string.label_start
-        _leftButtonTextRes.value = R.string.label_stop
+        _leftButtonTextRes.value = R.string.label_init
     }
 
-    fun onClickRightButton() {
-        _isEnableRightButton.value = false
-        coroutineScope.launch {
-            stopwatchLogicUseCase.startStopwatch(this, STOPWATCH_DELAY_TIME) { milliseconds ->
-                _timeText.value = milliseconds.HHmmssFormatString
+    fun onClickRightButton() = with(stopwatchLogicUseCase) {
+        when (stopwatchState) {
+            StopwatchState.START -> {
+                _rightButtonTextRes.value = R.string.label_continue
+                stopStopwatch(coroutineScope)
+            }
+            StopwatchState.STOP -> {
+                _rightButtonTextRes.value = R.string.label_stop
+                runStopwatch(coroutineScope, STOPWATCH_DELAY_TIME) { milliseconds ->
+                    _timeText.value = milliseconds.HHmmssFormatString
+                }
+            }
+            StopwatchState.RESET -> {
+                _rightButtonTextRes.value = R.string.label_start
+                runStopwatch(coroutineScope, STOPWATCH_DELAY_TIME) { milliseconds ->
+                    _timeText.value = milliseconds.HHmmssFormatString
+                }
             }
         }
     }
 
+
     fun onClickLeftButton() {
-        coroutineScope.launch {
-            stopwatchLogicUseCase.stopStopwatch()
+        _rightButtonTextRes.value = R.string.label_start
+        stopwatchLogicUseCase.resetStopwatch(coroutineScope) { milliseconds ->
+            _timeText.value = milliseconds.HHmmssFormatString
         }
-        _isEnableRightButton.value = true
     }
 
 }

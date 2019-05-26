@@ -2,4 +2,6 @@
     <string name="app_name">StopwatchApp</string>
     <string name="label_start">시작</string>
     <string name="label_stop">멈춤</string>
+    <string name="label_continue">계속</string>
+    <string name="label_init">초기화</string>
 </resources>

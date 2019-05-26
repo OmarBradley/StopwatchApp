@@ -21,7 +21,7 @@ internal object Version {
     const val retrofit2 = "2.5.0"
     const val coroutineAdapter = "0.9.2"
 
-    const val koin = "2.0.0-rc-2"
+    const val koin = "2.0.0-GA4"
 
     const val glide = "4.9.0"
 
