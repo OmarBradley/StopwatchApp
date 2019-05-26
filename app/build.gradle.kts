@@ -40,6 +40,7 @@ android {
 
 dependencies {
     implementation(project(":util"))
+    implementation(project(":domain"))
     implementation(Dependency.Kotlin.stblib)
     implementation(Dependency.AndroidX.appcompat)
     implementation(Dependency.AndroidX.ktx)

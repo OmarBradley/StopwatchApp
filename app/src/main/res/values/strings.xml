@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">StopwatchApp</string>
+    <string name="label_start">시작</string>
+    <string name="label_stop">멈춤</string>
 </resources>
