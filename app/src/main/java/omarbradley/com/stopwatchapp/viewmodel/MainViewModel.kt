@@ -2,10 +2,6 @@ package omarbradley.com.stopwatchapp.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import omarbradley.com.domain.usecase.stopwatch.StopwatchLogicUsecase
 import omarbradley.com.stopwatchapp.R
@@ -30,10 +26,6 @@ class MainViewModel(
     private val _leftButtonTextRes = MutableLiveData<Int>()
     val leftButtonTextRes: LiveData<Int> = _leftButtonTextRes
 
-    private lateinit var stopwatchJob: Job
-
-    private var seed = 0L
-
     init {
         _timeText.value = "00:00:00"
         _isEnableRightButton.value = true
@@ -43,20 +35,16 @@ class MainViewModel(
 
     fun onClickRightButton() {
         _isEnableRightButton.value = false
-        viewModelScope.launch {
-            stopwatchJob = launch {
-                stopwatchLogicUseCase.startStopwatch(seed, STOPWATCH_DELAY_TIME)
-                    .collect { milliseconds ->
-                        seed = milliseconds
-                        _timeText.value = milliseconds.times(STOPWATCH_DELAY_TIME).HHmmssFormatString
-                    }
+        coroutineScope.launch {
+            stopwatchLogicUseCase.startStopwatch(this, STOPWATCH_DELAY_TIME) { milliseconds ->
+                _timeText.value = milliseconds.HHmmssFormatString
             }
         }
     }
 
     fun onClickLeftButton() {
-        viewModelScope.launch {
-            stopwatchJob.cancelAndJoin()
+        coroutineScope.launch {
+            stopwatchLogicUseCase.stopStopwatch()
         }
         _isEnableRightButton.value = true
     }
