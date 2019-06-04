@@ -20,7 +20,11 @@ class MainActivity : BaseActivity() {
             lifecycleOwner = this@MainActivity
             viewModel = this@MainActivity.viewModel
         }
+    }
 
+    override fun onStop() {
+        viewModel.onStopMainActivity()
+        super.onStop()
     }
 
 }

@@ -41,28 +41,28 @@
                 app:layout_constraintBottom_toBottomOf="parent">
 
             <Button
-                    android:id="@+id/button_right"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textStyle="bold"
-                    android:textSize="20sp"
-                    android:text="@{viewModel.rightButtonTextRes}"
-                    android:textColor="@color/colorPrimary"
-                    style="?android:borderlessButtonStyle"
-                    android:onClick="@{(view) -> viewModel.onClickRightButton()}"
-                    android:layout_margin="4dp"/>
-
-            <Button
                     android:id="@+id/button_left"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textStyle="bold"
                     android:textSize="20sp"
-                    android:textColor="@color/colorAccent"
-                    android:enabled="@{viewModel.isEnableLeftButton}"
                     android:text="@{viewModel.leftButtonTextRes}"
+                    android:textColor="@color/colorPrimary"
                     style="?android:borderlessButtonStyle"
                     android:onClick="@{(view) -> viewModel.onClickLeftButton()}"
+                    android:layout_margin="4dp"/>
+
+            <Button
+                    android:id="@+id/button_right"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:textColor="@color/colorAccent"
+                    android:enabled="@{viewModel.isEnableRightButton}"
+                    android:text="@{viewModel.rightButtonTextRes}"
+                    style="?android:borderlessButtonStyle"
+                    android:onClick="@{(view) -> viewModel.onClickRightButton()}"
                     android:layout_margin="4dp"/>
 
         </LinearLayout>

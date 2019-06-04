@@ -20,67 +20,101 @@ class MainViewModel(
     private val _rightButtonTextRes = MutableLiveData<Int>()
     val rightButtonTextRes: LiveData<Int> = _rightButtonTextRes
 
-    private val _isEnableLeftButton = MutableLiveData<Boolean>()
-    val isEnableLeftButton: LiveData<Boolean> = _isEnableLeftButton
+    private val _isEnableRightButton = MutableLiveData<Boolean>()
+    val isEnableRightButton: LiveData<Boolean> = _isEnableRightButton
 
     private val _leftButtonTextRes = MutableLiveData<Int>()
     val leftButtonTextRes: LiveData<Int> = _leftButtonTextRes
 
-    private var stopwatchButtonState: StopwatchButtonState
-            by Delegates.observable(StopwatchButtonState.INIT) { _, _, newValue ->
+    private var leftButtonAction: LeftButtonAction
+            by Delegates.observable(LeftButtonAction.INIT) { _, _, newValue ->
                 when (newValue) {
-                    StopwatchButtonState.INIT -> {
-                        _isEnableLeftButton.value = false
+                    LeftButtonAction.INIT -> {
+                        _leftButtonTextRes.value = R.string.label_start
                         _timeText.value = "00:00:00.0"
-                        _rightButtonTextRes.value = R.string.label_start
-                        _leftButtonTextRes.value = R.string.label_init
                     }
-                    StopwatchButtonState.START, StopwatchButtonState.CONTINUE -> {
-                        _isEnableLeftButton.value = true
-                        _rightButtonTextRes.value = R.string.label_stop
-                        _leftButtonTextRes.value = R.string.label_init
+                    LeftButtonAction.START -> {
+                        _leftButtonTextRes.value = R.string.label_stop
                         stopwatchLogicUseCase.runStopwatch(coroutineScope, STOPWATCH_DELAY_TIME) { milliseconds ->
                             _timeText.value = milliseconds.HHmmssFormatString
                         }
                     }
-                    StopwatchButtonState.RESET -> {
-                        _rightButtonTextRes.value = R.string.label_start
-                        _leftButtonTextRes.value = R.string.label_init
-                        _isEnableLeftButton.value = false
-                        stopwatchLogicUseCase.resetStopwatch(coroutineScope) { milliseconds ->
+                    LeftButtonAction.STOP -> {
+                        _leftButtonTextRes.value = R.string.label_continue
+                        _isEnableRightButton.value = true
+                        _rightButtonTextRes.value = R.string.label_init
+                        stopwatchLogicUseCase.stopStopwatch(coroutineScope)
+                    }
+                    LeftButtonAction.CONTINUE -> {
+                        _leftButtonTextRes.value = R.string.label_stop
+                        stopwatchLogicUseCase.runStopwatch(coroutineScope, STOPWATCH_DELAY_TIME) { milliseconds ->
                             _timeText.value = milliseconds.HHmmssFormatString
                         }
                     }
-                    StopwatchButtonState.STOP -> {
-                        _rightButtonTextRes.value = R.string.label_continue
-                        _leftButtonTextRes.value = R.string.label_init
-                        _isEnableLeftButton.value = true
-                        stopwatchLogicUseCase.stopStopwatch(coroutineScope)
+                }
+            }
+
+    private var rightButtonAction: RightButtonAction
+            by Delegates.observable(RightButtonAction.INIT) { _, _, newValue ->
+                when (newValue) {
+                    RightButtonAction.INIT -> {
+                        _isEnableRightButton.value = false
+                        _rightButtonTextRes.value = R.string.label_empty
+                    }
+                    RightButtonAction.RAP_RECORD -> {
+                        _isEnableRightButton.value = true
+                        _rightButtonTextRes.value = R.string.label_rap_record
+                    }
+                    RightButtonAction.RESET -> {
+                        _leftButtonTextRes.value = R.string.label_start
+                        _isEnableRightButton.value = false
+                        _rightButtonTextRes.value = R.string.label_empty
                     }
                 }
             }
 
     init {
-        stopwatchButtonState = StopwatchButtonState.INIT
-    }
-
-    fun onClickRightButton() {
-        stopwatchButtonState = when (stopwatchButtonState) {
-            StopwatchButtonState.INIT -> StopwatchButtonState.START
-            StopwatchButtonState.START -> StopwatchButtonState.STOP
-            StopwatchButtonState.STOP -> StopwatchButtonState.CONTINUE
-            StopwatchButtonState.CONTINUE -> StopwatchButtonState.STOP
-            StopwatchButtonState.RESET -> StopwatchButtonState.START
-        }
+        leftButtonAction = LeftButtonAction.INIT
+        rightButtonAction = RightButtonAction.INIT
+        _timeText.value = "00:00:00.0"
     }
 
     fun onClickLeftButton() {
-        stopwatchButtonState = StopwatchButtonState.RESET
+        when (leftButtonAction) {
+            LeftButtonAction.INIT -> {
+                rightButtonAction = RightButtonAction.RAP_RECORD
+                leftButtonAction = LeftButtonAction.START
+            }
+            LeftButtonAction.START -> {
+                leftButtonAction = LeftButtonAction.STOP
+            }
+            LeftButtonAction.STOP -> {
+                rightButtonAction = RightButtonAction.RAP_RECORD
+                leftButtonAction = LeftButtonAction.CONTINUE
+            }
+            LeftButtonAction.CONTINUE -> {
+                leftButtonAction = LeftButtonAction.STOP
+            }
+        }
     }
 
-    enum class StopwatchButtonState {
-        INIT, START, STOP, CONTINUE, RESET
+    fun onClickRightButton() {
+        if (leftButtonAction == LeftButtonAction.STOP) {
+            rightButtonAction = RightButtonAction.INIT
+            leftButtonAction = LeftButtonAction.INIT
+        }
     }
 
+    fun onStopMainActivity() {
+
+    }
+
+    enum class LeftButtonAction {
+        INIT, START, STOP, CONTINUE
+    }
+
+    enum class RightButtonAction {
+        INIT, RAP_RECORD, RESET
+    }
 
 }
