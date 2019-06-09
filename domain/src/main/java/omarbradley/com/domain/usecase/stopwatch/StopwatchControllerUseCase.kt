@@ -44,6 +44,8 @@ class StopwatchControllerUseCase(
     fun runStopwatch(coroutineScope: CoroutineScope, startTimeMillis: Long) {
         coroutineScope.launch {
             mainStopwatchRunner.runStopwatch(startTimeMillis)
+        }
+        coroutineScope.launch {
             rapTimeStopwatchRunner.runStopwatch(startTimeMillis)
         }
     }
