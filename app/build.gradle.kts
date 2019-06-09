@@ -57,6 +57,7 @@ dependencies {
     implementation(Dependency.Koin.androidxViewmodel)
 
     implementation(Dependency.Lifecycle.viewModelKtx)
+    implementation(Dependency.Lifecycle.extensions)
 
     kapt(Dependency.Lifecycle.compiler)
 

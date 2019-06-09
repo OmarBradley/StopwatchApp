@@ -49,6 +49,8 @@ dependencies {
     implementation(Dependency.Paging.runtimeKtx)
     implementation(Dependency.Paging.common)
     implementation(Dependency.Kclock.jvm)
+    implementation(Dependency.Lifecycle.extensions)
+
 
     kapt(Dependency.Lifecycle.compiler)
     kapt(Dependency.Glide.compiler)

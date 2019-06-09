@@ -37,6 +37,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":util"))
     implementation(Dependency.Kotlin.stblib)
     implementation(Dependency.Coroutine.core)
 

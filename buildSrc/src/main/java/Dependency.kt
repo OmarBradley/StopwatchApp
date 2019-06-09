@@ -39,6 +39,7 @@ object Dependency {
 
         const val compiler = "androidx.lifecycle:lifecycle-compiler:${Version.lifecycle}"
         const val viewModelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:${Version.lifecycle}"
+        const val extensions = "androidx.lifecycle:lifecycle-extensions:${Version.lifecycle}"
     }
 
     object Junit {

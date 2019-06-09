@@ -5,3 +5,6 @@ import com.soywiz.klock.toTimeString
 
 val Long.HHmmssFormatString
     get() = milliseconds.toTimeString(3, true)
+
+val currentTimeMillis
+    get() = System.currentTimeMillis()

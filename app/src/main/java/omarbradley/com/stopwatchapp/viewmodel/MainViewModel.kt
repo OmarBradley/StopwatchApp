@@ -2,20 +2,28 @@ package omarbradley.com.stopwatchapp.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import omarbradley.com.domain.usecase.stopwatch.StopwatchLogicUsecase
+import omarbradley.com.domain.entity.RESET_TIME_MILLIS
+import omarbradley.com.domain.entity.RapRecord
+import omarbradley.com.domain.entity.Reset
+import omarbradley.com.domain.entity.Run
+import omarbradley.com.domain.usecase.stopwatch.StopwatchControllerUseCase
 import omarbradley.com.stopwatchapp.R
+import omarbradley.com.stopwatchapp.view.recyclerview.RapTimeItem
+import omarbradley.com.stopwatchapp.view.recyclerview.toRapTimeItem
 import omarbradley.com.util.base.BaseViewModel
 import omarbradley.com.util.date.HHmmssFormatString
+import omarbradley.com.util.date.currentTimeMillis
 import kotlin.properties.Delegates
 
-const val STOPWATCH_DELAY_TIME = 10L
-
 class MainViewModel(
-    private val stopwatchLogicUseCase: StopwatchLogicUsecase
+    private val stopwatchControllerUseCase: StopwatchControllerUseCase
 ) : BaseViewModel() {
 
     private val _timeText = MutableLiveData<String>()
     val timeText: LiveData<String> = _timeText
+
+    private val _rapTimeText = MutableLiveData<String>()
+    val rapTimeText: LiveData<String> = _rapTimeText
 
     private val _rightButtonTextRes = MutableLiveData<Int>()
     val rightButtonTextRes: LiveData<Int> = _rightButtonTextRes
@@ -26,30 +34,28 @@ class MainViewModel(
     private val _leftButtonTextRes = MutableLiveData<Int>()
     val leftButtonTextRes: LiveData<Int> = _leftButtonTextRes
 
+    private val _rapTimeItems = MutableLiveData<MutableList<RapTimeItem>>(mutableListOf())
+    val rapTimeItems: LiveData<MutableList<RapTimeItem>> = _rapTimeItems
+
     private var leftButtonAction: LeftButtonAction
             by Delegates.observable(LeftButtonAction.INIT) { _, _, newValue ->
                 when (newValue) {
                     LeftButtonAction.INIT -> {
                         _leftButtonTextRes.value = R.string.label_start
-                        _timeText.value = "00:00:00.0"
                     }
                     LeftButtonAction.START -> {
                         _leftButtonTextRes.value = R.string.label_stop
-                        stopwatchLogicUseCase.runStopwatch(coroutineScope, STOPWATCH_DELAY_TIME) { milliseconds ->
-                            _timeText.value = milliseconds.HHmmssFormatString
-                        }
+                        stopwatchControllerUseCase.startStopwatch(coroutineScope)
                     }
                     LeftButtonAction.STOP -> {
                         _leftButtonTextRes.value = R.string.label_continue
                         _isEnableRightButton.value = true
                         _rightButtonTextRes.value = R.string.label_init
-                        stopwatchLogicUseCase.stopStopwatch(coroutineScope)
+                        stopwatchControllerUseCase.stopStopwatch(coroutineScope)
                     }
                     LeftButtonAction.CONTINUE -> {
                         _leftButtonTextRes.value = R.string.label_stop
-                        stopwatchLogicUseCase.runStopwatch(coroutineScope, STOPWATCH_DELAY_TIME) { milliseconds ->
-                            _timeText.value = milliseconds.HHmmssFormatString
-                        }
+                        stopwatchControllerUseCase.runStopwatch(coroutineScope, currentTimeMillis)
                     }
                 }
             }
@@ -69,6 +75,12 @@ class MainViewModel(
                         _leftButtonTextRes.value = R.string.label_start
                         _isEnableRightButton.value = false
                         _rightButtonTextRes.value = R.string.label_empty
+
+                        stopwatchControllerUseCase.resetStopwatch(coroutineScope)
+                        with(_rapTimeItems) {
+                            value?.clear()
+                            value = value
+                        }
                     }
                 }
             }
@@ -76,7 +88,26 @@ class MainViewModel(
     init {
         leftButtonAction = LeftButtonAction.INIT
         rightButtonAction = RightButtonAction.INIT
-        _timeText.value = "00:00:00.0"
+        _timeText.value = RESET_TIME_MILLIS.HHmmssFormatString
+        _rapTimeText.value = RESET_TIME_MILLIS.HHmmssFormatString
+
+        stopwatchControllerUseCase.subscribeMainRunner(coroutineScope) { action ->
+            when (action) {
+                is Run -> _timeText.value = action.diffCurrentAndStartTimeMillis.HHmmssFormatString
+                is Reset -> _timeText.value = RESET_TIME_MILLIS.HHmmssFormatString
+            }
+        }
+
+        stopwatchControllerUseCase.subscribeRapTimeRunner(coroutineScope) { action ->
+            when (action) {
+                is Run -> _rapTimeText.value = action.diffCurrentAndStartTimeMillis.HHmmssFormatString
+                is Reset -> _rapTimeText.value = RESET_TIME_MILLIS.HHmmssFormatString
+                is RapRecord -> with(_rapTimeItems) {
+                    value?.add(0, action.toRapTimeItem(value?.size ?: 0))
+                    value = value
+                }
+            }
+        }
     }
 
     fun onClickLeftButton() {
@@ -100,14 +131,19 @@ class MainViewModel(
 
     fun onClickRightButton() {
         if (leftButtonAction == LeftButtonAction.STOP) {
-            rightButtonAction = RightButtonAction.INIT
+            rightButtonAction = RightButtonAction.RESET
             leftButtonAction = LeftButtonAction.INIT
+        }
+        if (rightButtonAction == RightButtonAction.RAP_RECORD) {
+            stopwatchControllerUseCase.onClickRapTime(coroutineScope)
         }
     }
 
-    fun onStopMainActivity() {
-
+    override fun onCleared() {
+        stopwatchControllerUseCase.closeStopwatchRunner()
+        super.onCleared()
     }
+
 
     enum class LeftButtonAction {
         INIT, START, STOP, CONTINUE
